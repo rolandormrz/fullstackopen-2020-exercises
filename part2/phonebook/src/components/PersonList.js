@@ -1,12 +1,13 @@
 import React from 'react';
+import Person from './Person';
 
 const ulStyle = {
   listStyleType: "none",
   paddingLeft: "10px"
 }
 
-const PersonList = ({ filteredPersons }) => {
-  const personList = filteredPersons.map((person, i) => <li key={i}>{person.name} {person.number}</li>);
+const PersonList = ({ persons, handleDelete }) => {
+  const personList = persons.map((person, i) => <Person key={i} person={person} handleDelete={handleDelete} />);
 
   return (
     <div>

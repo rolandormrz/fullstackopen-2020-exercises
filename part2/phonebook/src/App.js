@@ -3,7 +3,7 @@ import './App.css';
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import PersonList from './components/PersonList';
-import axios from 'axios';
+import PhonebookService from './utils/PhonebookService';
 
 
 const App = () => {
@@ -13,15 +13,21 @@ const App = () => {
   const [ filter, setFilter ] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:3001/persons')
-      .then(response => {
-        console.log(response);
-        setPersons(response.data);
-      })
+    PhonebookService.getAll().then(data => setPersons(data));
   }, []);
-
+  
   const handleChange = (setInfo) => e => {
     setInfo(e.target.value);
+  }
+
+  const handleDelete = id => {
+    PhonebookService.deletePerson(id)
+      .then(response => {
+        const deletedPersonIndex = persons.findIndex(person => person.id === id);
+        const changedPersons = [...persons];
+        changedPersons.splice(deletedPersonIndex, 1);
+        setPersons(changedPersons);
+      })
   }
 
   const handleSubmit = (e) => {
@@ -29,11 +35,21 @@ const App = () => {
     const foundIndex = persons.findIndex(person => person.name === newName);
     
     if(foundIndex !== -1) {
-      alert(`${newName} already exists in the phonebook`); 
+      const msg = `${newName} already exists in the phonebook, replace the old number with the new one entered?`;
+      const result = window.confirm(msg); 
+
+      if(result) {
+        const updatedPerson = { ...persons[foundIndex], number: newNumber };
+        PhonebookService.update(updatedPerson)
+          .then(returnedPerson => {
+            setPersons(persons.map(person => person.id === returnedPerson.id ? returnedPerson : person));
+          })
+      }
     }
     else {
       const newPerson = { name: newName, number: newNumber };
-      setPersons(persons.concat(newPerson));
+      PhonebookService.create(newPerson)
+        .then(createdPerson => setPersons(persons.concat(createdPerson)));
     }
 
     setNewName('');
@@ -57,7 +73,7 @@ const App = () => {
         handlers={{ handleChange, handleSubmit }} 
       />
       <h2>Numbers</h2>
-      <PersonList filteredPersons={filteredPersons} />
+      <PersonList persons={filteredPersons} handleDelete={handleDelete}/>
     </div>
   )
 }
