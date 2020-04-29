@@ -1,8 +1,21 @@
 const express = require('express');
 const app = express();
 let persons = require('./persons.js');
+var morgan = require('morgan')
 
 app.use(express.json());
+
+morgan.token('body', function (req, res) {return JSON.stringify(req.body)});
+app.use(morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms',
+    tokens.body(req, res),
+  ].join(' ')
+}));
 
 const generateId = () => {
   return Math.floor(Math.random() * 1000);
@@ -35,7 +48,7 @@ app.get('/api/persons/:id', (req, res) => {
 })
 
 app.post('/api/persons', (req, res) => {
-  const newPerson = req.body;
+  const newPerson = { ...req.body };
   if(!newPerson.name || !newPerson.number ) {
     res.status(400).json({ error: 'missing property' });
   }
