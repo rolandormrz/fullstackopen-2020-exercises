@@ -6,67 +6,40 @@ import PersonList from './components/PersonList';
 import PhonebookService from './utils/PhonebookService';
 import Notification from './components/Notification';
 
-const errorStyling = {
-  border: '2px solid red',
-  borderRadius: 6,
-  paddingLeft: 10,
-  marginBottom: 20,
-  background: '#F5F5F5',
-  color: 'red',
-  fontSize: 20
-}
-
-const successStyling = {
-  border: '2px solid green',
-  borderRadius: 6,
-  paddingLeft: 10,
-  marginBottom: 20,
-  background: '#F5F5F5',
-  color: 'green',
-  fontSize: 20
-}
-
 const App = () => {
   const [ persons, setPersons ] = useState([]); 
   const [ newName, setNewName ] = useState('');
   const [ newNumber, setNewNumber ] = useState('');
   const [ filter, setFilter ] = useState('');
-  const [ message, setMessage ] = useState('');
-  const [ styling, setStyling ] = useState(errorStyling);
+  const [ notifDetails, setNotifDetails ] = useState({ message: '', styling: '' });
 
   useEffect(() => {
     PhonebookService.getAll().then(data => setPersons(data));
   }, []);
   
-  const handleChange = (setInfo) => e => {
-    setInfo(e.target.value);
-  }
+  const handleChange = setInfo => e => setInfo(e.target.value);
 
-  const setNotification = (message, messageStyling) => {
-    setMessage(message);
-    setStyling(messageStyling);
-
-    setTimeout(() => {
-      setMessage('');
-    }, 3000);
+  const prepNotification = (message, styling) => {
+    setNotifDetails({ message, styling })
+    setTimeout(() => setNotifDetails({ message: '', styling: ''}), 3000);
   }
 
   const handleDelete = personToDelete => {
     PhonebookService.deletePerson(personToDelete.id)
-      .then(response => {
+      .then(() => {
         const deletedPersonIndex = persons.findIndex(person => personToDelete.id === person.id);
         const changedPersons = [...persons];
         const deletedPerson = changedPersons.splice(deletedPersonIndex, 1);
         setPersons(changedPersons);
-        setNotification(`${deletedPerson[0].name} has been removed from the phonebook`, successStyling);
+        prepNotification(`${deletedPerson[0].name} has been removed from the phonebook`, 'success');
       })
-      .catch(error => {
+      .catch(() => {
         setPersons(persons.filter(person => person.id !== personToDelete.id));
-        setNotification(`${personToDelete.name} has already been removed from the phonebook`, errorStyling);
+        prepNotification(`${personToDelete.name} has already been removed from the phonebook`, 'error');
       })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
     const foundIndex = persons.findIndex(person => person.name === newName);
     
@@ -79,10 +52,10 @@ const App = () => {
         PhonebookService.update(updatedPerson)
           .then(returnedPerson => {
             setPersons(persons.map(person => person.id === returnedPerson.id ? returnedPerson : person));
-            setNotification(`${returnedPerson.name}'s number has been updated in the phonebook`, successStyling);
+            prepNotification(`${returnedPerson.name}'s number has been updated in the phonebook`, 'success');
           })
-          .catch(error => {
-            setNotification(`${updatedPerson.name} was removed in another instance. Cannot update ${updatedPerson.name}'s number`, errorStyling);
+          .catch(() => {
+            prepNotification(`${updatedPerson.name} was removed in another instance. Cannot update ${updatedPerson.name}'s number`, 'error');
             setPersons(persons.filter(person => person.id !== updatedPerson.id));
           })
       }
@@ -92,7 +65,7 @@ const App = () => {
       PhonebookService.create(newPerson)
         .then(createdPerson => {
           setPersons(persons.concat(createdPerson))
-          setNotification(`${createdPerson.name} has been added to the phonebook`, successStyling);
+          prepNotification(`${createdPerson.name} has been added to the phonebook`, 'success');
         });
     }
 
@@ -110,7 +83,7 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
-      { message && <Notification message={message} styling={styling} /> }
+      { notifDetails.message && <Notification message={notifDetails.message} styling={notifDetails.styling} /> }
       <Filter filter={filter} handleChange={handleChange(setFilter)} />
       <h2>Add a new Entry</h2>
       <PersonForm fields={{ newName, newNumber }} 

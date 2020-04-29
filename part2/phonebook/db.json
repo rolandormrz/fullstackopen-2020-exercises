@@ -11,11 +11,6 @@
       "id": 5
     },
     {
-      "name": "Bruce Wayne",
-      "number": "123-321-7890",
-      "id": 6
-    },
-    {
       "name": "Dio Brando",
       "number": "666-666-6666",
       "id": 7
@@ -24,6 +19,26 @@
       "name": "Ash Ketchum",
       "number": "112-321-9900",
       "id": 8
+    },
+    {
+      "name": "Steve Rogers",
+      "number": "125-821-0021",
+      "id": 9
+    },
+    {
+      "name": "Joseph Joestar",
+      "number": "333-224-1289",
+      "id": 10
+    },
+    {
+      "name": "Crazy Rab",
+      "number": "124-234-9992",
+      "id": 11
+    },
+    {
+      "name": "Jotaro Kujo",
+      "number": "234-992-1891",
+      "id": 12
     }
   ]
 }
