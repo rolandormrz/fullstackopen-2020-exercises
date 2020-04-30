@@ -8,6 +8,11 @@ const persons = [
     id: 2,
     name: 'Peter Parker',
     number: '444-123-4567'
+  },
+  {
+    id: 3,
+    name: 'Dio Brando',
+    number: '341-902-2223'
   }
 ]
 
