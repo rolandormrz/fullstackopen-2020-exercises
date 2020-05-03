@@ -66,7 +66,12 @@ const App = () => {
         .then(createdPerson => {
           setPersons(persons.concat(createdPerson))
           prepNotification(`${createdPerson.name} has been added to the phonebook`, 'success');
-        });
+        })
+        .catch(error => {
+          const response = error.response;
+          const errorMessage = response.data.error;
+          prepNotification(errorMessage, 'error');
+        })
     }
 
     setNewName('');

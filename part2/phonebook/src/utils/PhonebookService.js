@@ -6,7 +6,7 @@ const relativeURL = '/api/persons';
 
 const create = newPerson => {
   const request = axios.post(relativeURL, newPerson);
-  return request.then(response => response.data);
+  return request.then(response => response.data)
 }
 
 const update = updatedPerson => {

@@ -8,9 +8,9 @@ if(process.argv.length < 3) {
 const password = process.argv[2];
 const url = `mongodb+srv://roli:${password}@roli-cluster-sjkko.mongodb.net/phonebook?retryWrites=true&w=majority`;
 
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
-console.log('connected');
-
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(result => console.log('connected to mongodb'));
+  
 const personSchema = new mongoose.Schema({
   name: String,
   number: String
@@ -24,7 +24,6 @@ if(process.argv.length === 3) {
 
   Person.find({}).then(result => {
     console.log('phonebook:');
-    console.log(result);
 
     result.forEach(person => {
       console.log(`${person.name} ${person.number}`);

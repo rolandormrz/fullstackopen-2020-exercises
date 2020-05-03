@@ -1,13 +1,15 @@
 require('dotenv').config();
 const express = require('express');
-const app = express();
+
 const Person = require('./models/person');
-let persons = require('./persons.js');
 var morgan = require('morgan');
 const cors = require('cors');
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
 const errorMiddleware = require('./middleware/error');
+
+const app = express();
 
 // connect to database
 console.log('connecting to database');
@@ -71,16 +73,9 @@ app.post('/api/persons', (req, res, next) => {
     return res.status(400).json({ error: 'missing property' });
   }
 
-  Person.find({ name })
-    .then(result => {
-      if(result.length === 0) {
-        const person = new Person({ name, number });
-        person.save().then(savedPerson => res.status(201).json(savedPerson.toJSON()));
-      }
-      else {
-        res.status(400).json({ error: 'name must be unique' });
-      }
-    })
+  const person = new Person({ name, number });
+  person.save()
+    .then(savedPerson => res.status(201).json(savedPerson.toJSON()))
     .catch(error => next(error));
 })
 

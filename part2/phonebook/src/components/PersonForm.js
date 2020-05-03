@@ -8,7 +8,7 @@ const PersonForm = ({ fields, setFields, handlers }) => {
   return (
     <form onSubmit={handleSubmit}>
       <div>
-        name: <input value={newName} onChange={handleChange(setNewName)} pattern="^(\w\w+)\s(\w+)$" required />
+        name: <input value={newName} onChange={handleChange(setNewName)} required />
         <br />
         number: <input value={newNumber} onChange={handleChange(setNewNumber)} required />
       </div>
