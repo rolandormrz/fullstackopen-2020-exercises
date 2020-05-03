@@ -6,9 +6,10 @@ if(process.argv.length < 3) {
 }
 
 const password = process.argv[2];
-const url = `mongodb+srv://fullstackcourse:${password}@cluster0-sjkko.mongodb.net/test?retryWrites=true&w=majority`;
+const url = `mongodb+srv://roli:${password}@roli-cluster-sjkko.mongodb.net/phonebook?retryWrites=true&w=majority`;
 
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+console.log('connected');
 
 const personSchema = new mongoose.Schema({
   name: String,
@@ -16,15 +17,24 @@ const personSchema = new mongoose.Schema({
 });
 
 const Person = mongoose.model('Person', personSchema);
+console.log('model setup');
 
 if(process.argv.length === 3) {
+  console.log('before data retrieval');
+
   Person.find({}).then(result => {
     console.log('phonebook:');
+    console.log(result);
+
     result.forEach(person => {
       console.log(`${person.name} ${person.number}`);
-    })
+    });
+
     mongoose.connection.close();
   })
+  .catch(error => {
+    console.log(error);
+  });
 }
 else {
   const name = process.argv[3];
@@ -35,8 +45,13 @@ else {
     number
   });
 
+  console.log('before data insert');
+
   person.save().then(response => {
     console.log(`${name} ${number} was added to the phonebook`);
     mongoose.connection.close();
   })
+  .catch(error => {
+    console.log(error);
+  });
 }
