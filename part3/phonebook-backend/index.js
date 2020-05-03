@@ -14,7 +14,7 @@ const app = express();
 // connect to database
 console.log('connecting to database');
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(results => console.log('connected to MongoDB'))
+  .then(() => console.log('connected to MongoDB'))
   .catch(error => console.log('error connecting to MongoDB: ', error.message));
 
 app.use(express.json());
@@ -22,15 +22,16 @@ app.use(cors());
 app.use(express.static('build'));
 
 // set up and use morgan for logging
-morgan.token('body', function (req, res) {return JSON.stringify(req.body)});
+morgan.token('body', function (req) {return JSON.stringify(req.body);});
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 
 app.get('/api/persons', (req, res, next) => {
-  Person.find({}).then(people => {
-    res.json(people.map(person => person.toJSON()));
-  })
-  .catch(error => next(error));
-})
+  Person.find({})
+    .then(people => {
+      res.json(people.map(person => person.toJSON()));
+    })
+    .catch(error => next(error));
+});
 
 app.get('/info', (req, res, next) => {
   const date = new Date();
@@ -51,7 +52,7 @@ app.get('/info', (req, res, next) => {
       res.send(info);
     })
     .catch(error => next(error));
-})
+});
 
 app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id)
@@ -64,7 +65,7 @@ app.get('/api/persons/:id', (req, res, next) => {
       }
     })
     .catch(error => next(error));
-})
+});
 
 app.post('/api/persons', (req, res, next) => {
   const { name, number } = req.body;
@@ -77,7 +78,7 @@ app.post('/api/persons', (req, res, next) => {
   person.save()
     .then(savedPerson => res.status(201).json(savedPerson.toJSON()))
     .catch(error => next(error));
-})
+});
 
 app.put('/api/persons/:id', (req, res, next) => {
   const person = {
@@ -95,17 +96,17 @@ app.put('/api/persons/:id', (req, res, next) => {
       }
     })
     .catch(error => next(error));
-})
+});
 
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndDelete(req.params.id)
-    .then(result => res.status(204).end())
+    .then(() => res.status(204).end())
     .catch(error => next(error));
-})
+});
 
 // error handling middleware
 app.use(errorMiddleware.unknownEndpoint);
 app.use(errorMiddleware.errorHandler);
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}`))
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));

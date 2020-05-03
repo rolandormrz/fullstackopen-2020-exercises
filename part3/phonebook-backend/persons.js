@@ -14,6 +14,6 @@ const persons = [
     name: 'Dio Brando',
     number: '341-902-2223'
   }
-]
+];
 
 module.exports = persons;
