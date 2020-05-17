@@ -1,9 +1,11 @@
 const blogsRouter = require('express').Router();
 const Blog = require('../models/blog');
+const User = require('../models/user');
+const jwt = require('jsonwebtoken');
 
 blogsRouter.get('/', async (req, res, next) => {
   try {
-    const response = await Blog.find({});
+    const response = await Blog.find({}).populate('user', { username: 1, name: 1});
     res.json(response);
   }
   catch (exception) {
@@ -12,21 +14,50 @@ blogsRouter.get('/', async (req, res, next) => {
 });
 
 blogsRouter.post('/', async (req, res, next) => {
-  const blogDetails = req.body;
+  const body = req.body;
 
-  if(!blogDetails.title || !blogDetails.url) {
+  // get the token from the header authorization field
+  const token = req.token
+  // decode the token using jwt's verify method and our secret password
+  let decodedToken = null;
+
+  try {
+    decodedToken = jwt.verify(token, process.env.SECRET);
+  }
+  catch(exception) {
+    return res.status(401).json({ error: 'supplied token is not valid' });
+  }
+  
+  // if either the token is null or the decoded token's id field is null then return error
+  if(!token || !decodedToken.id) {
+    return res.status(401).json({ error: 'token missing or invalid' });
+  }
+
+  // verify the existence of the title and url fields from the body
+  if(!body.title || !body.url) {
     res.status(400).end();
   }
 
-  if(!blogDetails.likes) {
-    blogDetails.likes = 0;
+  if(!body.likes) {
+    body.likes = 0;
   }
 
-  const newBlog = new Blog(blogDetails);
+  const user = await User.findById(decodedToken.id);
+
+  const newBlog = new Blog({
+    title: body.title,
+    author: body.author,
+    url: body.url,
+    likes: body.likes,
+    user: user._id
+  });
 
   try {
-    const response = await newBlog.save();
-    res.status(201).json(response.toJSON());
+    const savedBlog = await newBlog.save();
+    user.blogs = user.blogs.concat(savedBlog._id);
+    await user.save();
+
+    res.status(201).json(savedBlog.toJSON());
   }
   catch (exception) {
     next(exception);
@@ -61,12 +92,34 @@ blogsRouter.put('/:id', async (req, res, next) => {
 
 blogsRouter.delete('/:id', async (req, res, next) => {
   const id = req.params.id;
+  const token = req.token;
+
+  // decode the token using jwt's verify method and our secret password
+  const decodedToken = jwt.verify(token, process.env.SECRET);
+  // if either the token is null or the decoded token's id field is null then return error
+  if(!token || !decodedToken.id) {
+    return response.status(401).json({ error: 'token missing' });
+  }
 
   try {
-    const result = await Blog.findByIdAndRemove(id);
+    const blog = await Blog.findById(id);
 
-    if(result) {
-      res.status(204).end();
+    if(blog) { 
+      if(blog.user.toString() === decodedToken.id.toString()) {
+        // get the user matched to the token from the users collection
+        const user = await User.findById(decodedToken.id);
+
+        // find the index of the blog to be removed within the user's blog array
+        const indexToRemove = user.blogs.findIndex(blogId => blogId === blog._id);
+        user.blogs.splice(indexToRemove, 1);
+        
+        await user.save();
+        await blog.remove();
+        res.status(204).end();
+      }
+      else {
+        res.status(401).json({ error: 'blogs can only be deleted by their original creator' });
+      }
     }
     else {
       res.status(404).end()
