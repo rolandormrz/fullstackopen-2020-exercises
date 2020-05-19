@@ -1,0 +1,10 @@
+POST http://localhost:3001/api/blogs
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkJvd3NlckpyIiwiaWQiOiI1ZWMwYmVhMTZmNWRkYjFhY2QwZjVhM2EiLCJpYXQiOjE1ODk2OTE2NzV9.QYg9muTwujbwp_QkIshzCoGtocKvHjNtfHGZ-oPyOkg
+
+{
+  "title": "Shell Polishing",
+  "author": "BowserJr",
+  "url": "am.com",
+  "likes": 252
+}

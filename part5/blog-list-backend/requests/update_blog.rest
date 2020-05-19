@@ -1,0 +1,6 @@
+PUT http://localhost:3001/api/blogs/5ebcf38dc23573c1a5759c2c
+Content-Type: application/json
+
+{
+  "title": "The Second Best Best Blog"
+}
